@@ -11,13 +11,16 @@
   "dependencies": {
     "@heroicons/react": "^2.1.5",
     "@vercel/postgres": "^0.10.0",
+    "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "clsx": "^2.1.1",
-    "next": "15.0.0-rc.0",
+    "next": "^14.2.12",
     "next-auth": "5.0.0-beta.21",
     "openssl": "^2.0.0",
     "react": "19.0.0-rc-f2df5694-20240916",
     "react-dom": "19.0.0-rc-f2df5694-20240916",
+    "use-debounce": "^10.0.3",
+    "yahoo-finance2": "^2.12.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -18,7 +18,7 @@ export const authConfig = {
         if (isLoggedIn) return true;
         return false;
       } else if (isLoggedIn) {
-        return Response.redirect(new URL("/myAsset", nextUrl));
+        return Response.redirect(new URL("/buy-sell", nextUrl));
       }
       return true; // Allow access to public or non-protected pages
     },
