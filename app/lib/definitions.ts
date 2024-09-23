@@ -42,6 +42,7 @@ export type StockTransactionModalProps = {
     quantity: number;
     password: string;
     transactionType: string;
+    price: number | null;
   }) => void;
   transactionType: "buy" | "sell";
 };

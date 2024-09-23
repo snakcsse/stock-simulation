@@ -7,14 +7,14 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const protectedRoutes = ["/myAsset", "/buySell"];
+      const protectedRoutes = ["/asset", "/buy-sell", "/transactions"];
 
       // Check if the user is trying to access a protected route
-      const isOnPortectedRoute = protectedRoutes.some((route) =>
+      const isOnProtectedRoute = protectedRoutes.some((route) =>
         nextUrl.pathname.startsWith(route)
       );
 
-      if (isOnPortectedRoute) {
+      if (isOnProtectedRoute) {
         if (isLoggedIn) return true;
         return false;
       } else if (isLoggedIn) {
@@ -22,6 +22,10 @@ export const authConfig = {
       }
       return true; // Allow access to public or non-protected pages
     },
+    // async session({ session, user }) {
+    //   session.user = user; // Example: adding user ID to session
+    //   return session;
+    // },
   },
   providers: [],
 } satisfies NextAuthConfig;

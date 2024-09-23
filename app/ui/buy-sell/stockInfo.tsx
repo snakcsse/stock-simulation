@@ -1,14 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import axios from "axios";
 import { StockInfo } from "@/app/lib/definitions";
 import StockTransactionModal from "@/app/ui/buy-sell/buySellModal";
+import { buyStock, sellStock } from "@/app/lib/actions";
 
 export default function StockInfo({ symbol }: { symbol: string }) {
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<"buy" | "sell">("buy");
+
+  // const { data: session, status } = useSession();
+  // if (status === "loading") {
+  //   return <p>Loading...</p>;
+  // }
+
+  // if (!session) {
+  //   return <p>Access Denied</p>;
+  // }
+
+  // console.log(session);
+
+  // const userId = session?.user?.id;
+
+  // getUser();
 
   useEffect(() => {
     const fetchStock = async () => {
@@ -38,10 +55,19 @@ export default function StockInfo({ symbol }: { symbol: string }) {
     setIsModalOpen(false);
   };
 
-  const handleSubmitTransaction = () => {
-    // TODO: Implement transaction logic here
-    console.log(`Submitting transaction for ${symbol} as ${transactionType}`);
-    setIsModalOpen(false);
+  const handleSubmitTransaction = async (
+    quantity: number,
+    price: number,
+    password: string,
+    transactionType: "buy" | "sell"
+  ) => {
+    if (transactionType === "buy") {
+      await buyStock(symbol, quantity, price, password, transactionType);
+    } else if (transactionType === "sell") {
+      await sellStock(symbol, quantity, price, password, transactionType);
+    }
+    console.log(`Submitted transaction for ${symbol} as ${transactionType}`);
+    // setIsModalOpen(false);
   };
 
   return (
@@ -94,6 +120,8 @@ export default function StockInfo({ symbol }: { symbol: string }) {
         onClose={handleCloseModal}
         onSubmit={handleSubmitTransaction}
         transactionType={transactionType}
+        stockInfo={stockInfo}
+        // price={stockInfo ? stockInfo.price.regularMarketPrice : null}
       />
     </div>
   );

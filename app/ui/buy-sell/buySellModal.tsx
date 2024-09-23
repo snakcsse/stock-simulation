@@ -9,6 +9,7 @@ export default function StockTransactionModal({
   onClose,
   onSubmit,
   transactionType,
+  stockInfo,
 }: StockTransactionModalProps) {
   const [quantity, setQuantity] = useState(100);
   const [password, setPassword] = useState("");
@@ -29,7 +30,10 @@ export default function StockTransactionModal({
     e.preventDefault();
     if (error) return;
 
-    onSubmit({ quantity, password, transactionType });
+    const price = stockInfo.price.regularMarketPrice;
+    console.log(price);
+
+    onSubmit(quantity, price, password, transactionType);
   };
 
   if (!isOpen) return null;
