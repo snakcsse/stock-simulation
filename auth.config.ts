@@ -7,7 +7,7 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const protectedRoutes = ["/asset", "/buy-sell", "/transactions"];
+      const protectedRoutes = ["/assets", "/buy-sell", "/transactions"];
 
       // Check if the user is trying to access a protected route
       const isOnProtectedRoute = protectedRoutes.some((route) =>

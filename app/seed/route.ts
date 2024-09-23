@@ -43,7 +43,7 @@ async function createTables() {
       user_id UUID REFERENCES users(id),
       stock_symbol VARCHAR(10),
       quantity INT NOT NULL,
-      price NUMERIC(15, 2) NOT NULL,
+      average_price NUMERIC(15, 2) NOT NULL,
       PRIMARY KEY (user_id, stock_symbol)
     )
     `;

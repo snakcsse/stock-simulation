@@ -17,8 +17,9 @@ export default async function Transaction() {
 
         return (
           <div key={transaction.id}>
-            {transactionTime} - {transaction.symbol} - {transaction.quantity} -{" "}
-            {transaction.type} - {transaction.price_at_transaction}
+            {transactionTime} - {transaction.stock_symbol} -{" "}
+            {transaction.quantity} - {transaction.transaction_type} -{" "}
+            {transaction.price_at_transaction}
           </div>
         );
       })}
