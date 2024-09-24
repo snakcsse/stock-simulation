@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { StarIcon } from "@heroicons/react/24/solid";
 
 export default function Home() {
   return (
@@ -7,7 +8,7 @@ export default function Home() {
       {/* Top Left Title Section */}
       <div className="absolute top-4 left-4 flex items-center space-x-2">
         <div className="w-10 h-10 bg-sky-300 flex items-center justify-center rounded">
-          <span className="text-white font-bold text-2xl">G</span>
+          <StarIcon className="h-6 w-6 text-white" />
         </div>
         <span className="text-sky-300 font-semibold text-3xl">GrowStocks</span>
       </div>
@@ -15,8 +16,8 @@ export default function Home() {
       {/* Main Content */}
       <div className="flex flex-col lg:flex-row-reverse items-center justify-between w-full px-8 lg:px-32">
         {/* Middle Left Section (Now moved to the right) */}
-        <div className="lg:w-1/2 space-y-6">
-          <h1 className="text-4xl font-bold">
+        <div className="lg:w-1/2 space-y-6 text-left">
+          <h1 className="text-3xl lg:text-4xl font-bold">
             Stock <span className="text-sky-300">Simulation</span> App
           </h1>
           <p className="text-gray-500 text-lg">
@@ -39,7 +40,7 @@ export default function Home() {
         </div>
 
         {/* Middle Right Section (Now moved to the left) */}
-        <div className="lg:w-1/2 mt-8 lg:mt-0">
+        <div className="lg:w-1/2 mt-8 lg:mt-0 hidden lg:block">
           {/* Placeholder for stock chart image */}
           <Image
             src="/stock-chart.jpg" // Add your stock chart image here
