@@ -1,45 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
-import axios from "axios";
 import { StockInfo } from "@/app/lib/definitions";
 import StockTransactionModal from "@/app/ui/buy-sell/buySellModal";
-import { buyStock, sellStock } from "@/app/lib/actions";
+import StockChart from "@/app/ui/buy-sell/stockChart";
+import { buyStock, sellStock, fetchStockInfo } from "@/app/lib/actions";
 
 export default function StockInfo({ symbol }: { symbol: string }) {
   const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
+  const [currentPrice, setCurrentPrice] = useState(0);
+  const [previousClose, setPreviousClose] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<"buy" | "sell">("buy");
-
-  // const { data: session, status } = useSession();
-  // if (status === "loading") {
-  //   return <p>Loading...</p>;
-  // }
-
-  // if (!session) {
-  //   return <p>Access Denied</p>;
-  // }
-
-  // console.log(session);
-
-  // const userId = session?.user?.id;
-
-  // getUser();
 
   useEffect(() => {
     const fetchStock = async () => {
       try {
-        const res = await axios.get(`/api/stockInfo?symbol=${symbol}`);
-        const data = res.data.data;
-        setStockInfo(data);
+        const result = await fetchStockInfo(symbol);
+        setStockInfo(result);
       } catch (error) {
         console.log("Error getting stock price", error);
       }
     };
     fetchStock();
   }, []);
-  //   const res = await axios.get(`/api/stockInfo?symbol=${symbol}`);
+
+  useEffect(() => {
+    if (stockInfo) {
+      setCurrentPrice(stockInfo.price.regularMarketPrice);
+      setPreviousClose(stockInfo.summaryDetail.previousClose);
+    }
+  });
 
   const handleBuyClick = () => {
     setTransactionType("buy");
@@ -70,58 +61,114 @@ export default function StockInfo({ symbol }: { symbol: string }) {
     // setIsModalOpen(false);
   };
 
+  const priceChange = currentPrice - previousClose;
+  const percentChange = (priceChange / previousClose) * 100;
+
   return (
-    <div>
-      <h2>{symbol}</h2>
+    <div className="space-y-8">
+      <h2 className="text-3xl font-semibold text-sky-500 mb-6">
+        {symbol.toUpperCase()}
+      </h2>
+
       {stockInfo ? (
         <>
-          <p>{stockInfo.price.regularMarketPrice}</p>
-          <ul>
-            <li>
-              <strong>Previous Close:</strong>{" "}
-              {stockInfo.summaryDetail.previousClose}
-            </li>
-            <li>
-              <strong>Open:</strong> {stockInfo.summaryDetail.open}
-            </li>
-            <li>
-              <strong>Day's Low:</strong> {stockInfo.summaryDetail.dayLow}
-            </li>
-            <li>
-              <strong>Day's High:</strong> {stockInfo.summaryDetail.dayHigh}
-            </li>
-            <li>
-              <strong>52 Weeks Low:</strong>{" "}
-              {stockInfo.summaryDetail.fiftyTwoWeekLow}
-            </li>
-            <li>
-              <strong>52 Weeks High:</strong>{" "}
-              {stockInfo.summaryDetail.fiftyTwoWeekHigh}
-            </li>
-            <li>
-              <strong>Volume:</strong> {stockInfo.summaryDetail.volume}
-            </li>
-            <li>
-              <strong>Market Cap:</strong> {stockInfo.summaryDetail.marketCap}
-            </li>
-          </ul>
-          <button className="p-4 border" onClick={handleBuyClick}>
-            Buy
-          </button>
-          <button className="p-4 border" onClick={handleSellClick}>
-            Sell
-          </button>
+          {/* Display Current Price and Change */}
+          <div className="flex items-center mb-4">
+            <div className="text-2xl font-bold">${currentPrice.toFixed(2)}</div>
+            <div
+              className={`ml-4 ${
+                priceChange >= 0 ? "text-green-500" : "text-red-500"
+              }`}
+            >
+              {priceChange >= 0 ? "+" : ""}
+              {priceChange.toFixed(2)} ({percentChange.toFixed(2)}%)
+            </div>
+          </div>
+
+          {/* Buttons for Buy/Sell */}
+          <div className="mt-4 flex justify-start space-x-4">
+            <button
+              onClick={handleBuyClick}
+              className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+            >
+              Buy
+            </button>
+            <button
+              onClick={handleSellClick}
+              className="px-6 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+            >
+              Sell
+            </button>
+          </div>
+
+          {/* Stock Data Table */}
+          <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg mt-4">
+            <tbody>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">Previous Close</td>
+                <td className="border px-4 py-2">
+                  ${stockInfo.summaryDetail.previousClose}
+                </td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">Open</td>
+                <td className="border px-4 py-2">
+                  ${stockInfo.summaryDetail.open}
+                </td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">Day's Low</td>
+                <td className="border px-4 py-2">
+                  ${stockInfo.summaryDetail.dayLow}
+                </td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">Day's High</td>
+                <td className="border px-4 py-2">
+                  ${stockInfo.summaryDetail.dayHigh}
+                </td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">52 Week Low</td>
+                <td className="border px-4 py-2">
+                  ${stockInfo.summaryDetail.fiftyTwoWeekLow}
+                </td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">52 Week High</td>
+                <td className="border px-4 py-2">
+                  ${stockInfo.summaryDetail.fiftyTwoWeekHigh}
+                </td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">Volume</td>
+                <td className="border px-4 py-2">
+                  {(stockInfo.summaryDetail.volume / 1000000).toFixed(2)}M
+                </td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">Market Cap</td>
+                <td className="border px-4 py-2">
+                  ${(stockInfo.summaryDetail.marketCap / 100000000).toFixed(2)}B
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </>
       ) : (
         <div>Loading...</div>
       )}
+
+      <div>
+        <StockChart symbol={symbol} />
+      </div>
+
       <StockTransactionModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleSubmitTransaction}
         transactionType={transactionType}
         stockInfo={stockInfo}
-        // price={stockInfo ? stockInfo.price.regularMarketPrice : null}
       />
     </div>
   );

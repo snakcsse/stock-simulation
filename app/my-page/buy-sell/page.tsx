@@ -9,7 +9,6 @@ export default async function Page({
 
   return (
     <div className="w-full">
-      <h1>Quote</h1>
       <Search placeholder="Search stocks..." />
     </div>
   );

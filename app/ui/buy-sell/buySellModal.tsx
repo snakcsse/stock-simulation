@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { StockTransactionModalProps } from "@/app/lib/definitions";
+import { useDebouncedCallback } from "use-debounce";
 
-// TODO: Understand types
 export default function StockTransactionModal({
   isOpen,
   onClose,
@@ -13,58 +13,76 @@ export default function StockTransactionModal({
 }: StockTransactionModalProps) {
   const [quantity, setQuantity] = useState(100);
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [quantityCheck, setQuantityCheck] = useState("");
 
   const handleQuantityChange = (e) => {
     const value = Number(e.target.value);
     if (value % 100 === 0 && value >= 100) {
       setQuantity(value);
-      setError("");
+      setQuantityCheck("");
     } else {
-      setError("Quantity must be in increments of 100 and at least 100");
+      setQuantityCheck(
+        "Quantity must be in increments of 100 and at least 100"
+      );
     }
   };
 
-  // TODO: understand type
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (error) return;
+    if (quantityCheck) return;
 
     const price = stockInfo.price.regularMarketPrice;
-    console.log(price);
 
-    onSubmit(quantity, price, password, transactionType);
+    try {
+      await onSubmit(quantity, price, password, transactionType);
+
+      alert(
+        `Successfully ${
+          transactionType === "buy" ? "bought" : "sold"
+        } ${quantity} units at $${price}`
+      );
+      setPassword("");
+    } catch (err) {
+      alert(err.message);
+      setPassword("");
+    }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-6 w-1/3">
-        <h2 className="text-lg font-bold mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 w-screen h-screen">
+      <div className="relative bg-white rounded-lg p-6 w-full max-w-lg mx-4 sm:w-1/3 sm:p-8">
+        <h2 className="text-lg sm:text-xl font-bold mb-4 text-center">
           {transactionType === "buy" ? "Buy Stock" : "Sell Stock"}
         </h2>
         <button
-          className="absolute top-2 right-2 text-gray-500 bg-blue-500"
+          className="absolute top-2 right-2 text-gray-500 text-xl"
           onClick={onClose}
         >
           &times;
         </button>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block mb-1">Quantity (100 unit increments)</label>
+            <label className="block mb-1 text-sm sm:text-base">
+              Quantity (100 unit increments)
+            </label>
             <input
               type="number"
-              value={quantity}
+              defaultValue={100}
               onChange={handleQuantityChange}
-              className="border border-gray-300 p-2 w-full rounded"
-              min="100"
-              step="100"
+              className="border border-gray-300 p-2 w-full rounded text-sm sm:text-base"
+              // min="100"
+              // step="100"
             />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {quantityCheck && (
+              <p className="text-red-500 text-xs sm:text-sm">{quantityCheck}</p>
+            )}
           </div>
           <div className="mb-4">
-            <label className="block mb-1">Transaction Password</label>
+            <label className="block mb-1 text-sm sm:text-base">
+              Transaction Password
+            </label>
             <input
               type="password"
               value={password}
@@ -75,7 +93,7 @@ export default function StockTransactionModal({
           </div>
           <button
             type="submit"
-            className="bg-blue-500 text-white p-2 rounded w-full"
+            className="bg-blue-500 text-white p-2 rounded w-full text-sm sm:text-base"
           >
             {transactionType === "buy" ? "Buy" : "Sell"}
           </button>

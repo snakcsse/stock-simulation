@@ -2,6 +2,7 @@
 import { auth } from "@/auth";
 
 import { signIn } from "@/auth";
+import axios from "axios";
 import { AuthError } from "next-auth";
 import { z } from "zod";
 import { sql } from "@vercel/postgres";
@@ -10,6 +11,7 @@ import { redirect } from "next/navigation";
 import yahooFinance from "yahoo-finance2";
 import bcrypt from "bcrypt";
 
+// Login
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData
@@ -76,7 +78,7 @@ export async function signUp(
   }
 }
 
-// Add buy sell action
+// Buy sell actions
 export async function getUser() {
   const session = await auth();
   const user = await sql`SELECT * FROM users WHERE email=${session.user.email}`;
@@ -123,7 +125,7 @@ export async function buyStock(
     // Update user_assets to perfrom buy transaction
     await sql`
     INSERT INTO user_assets(user_id, stock_symbol, quantity, average_price)
-    VALUES (${userId},${stockSymbol},${quantity},${price})
+    VALUES (${userId},${stockSymbol.toLocaleUpperCase()},${quantity},${price})
     ON CONFLICT (user_id, stock_symbol) 
     DO UPDATE SET quantity = user_assets.quantity + EXCLUDED.quantity, 
     average_price = ((user_assets.average_price * user_assets.quantity) + (EXCLUDED.average_price * EXCLUDED.quantity)) 
@@ -133,10 +135,8 @@ export async function buyStock(
     // Record the transaction
     await sql`
     INSERT INTO transactions (user_id, stock_symbol, quantity, price_at_transaction, transaction_type)
-    VALUES (${userId}, ${stockSymbol}, ${quantity}, ${price}, 'buy')
+    VALUES (${userId}, ${stockSymbol.toLocaleUpperCase()}, ${quantity}, ${price}, 'buy')
     `;
-
-    console.log("Stock purchase successful!");
   } catch (error) {
     console.error("Failed to buy stock:", error);
     throw new Error("Failed to buy stock.");
@@ -165,7 +165,7 @@ export async function sellStock(
 
     // Check if user has enough stock
     const userStockQuantity = await sql`
-    SELECT quantity FROM user_assets WHERE user_id = ${userId} AND stock_symbol = ${stockSymbol} 
+    SELECT quantity FROM user_assets WHERE user_id = ${userId} AND stock_symbol = ${stockSymbol.toLocaleUpperCase()} 
     `;
     const stockQuantity = parseFloat(userStockQuantity.rows[0]?.quantity);
 
@@ -185,21 +185,19 @@ export async function sellStock(
     if (newQuantity > 0) {
       await sql`
       UPDATE user_assets SET quantity = ${newQuantity}
-      WHERE user_id = ${userId} AND stock_symbol = ${stockSymbol}
+      WHERE user_id = ${userId} AND stock_symbol = ${stockSymbol.toLocaleUpperCase()}
       `;
     } else {
       await sql`
-      DELETE FROM user_assets WHERE user_id = ${userId} AND stock_symbol = ${stockSymbol}
+      DELETE FROM user_assets WHERE user_id = ${userId} AND stock_symbol = ${stockSymbol.toLocaleUpperCase()}
       `;
     }
 
     // Record the transaction
     await sql`
     INSERT INTO transactions (user_id, stock_symbol, quantity, price_at_transaction, transaction_type)
-    VALUES (${userId}, ${stockSymbol}, ${quantity}, ${price}, 'sell')
+    VALUES (${userId}, ${stockSymbol.toLocaleUpperCase()}, ${quantity}, ${price}, 'sell')
     `;
-
-    console.log("Stock sold successful!");
   } catch (error) {
     console.error("Failed to sell stock:", error);
     throw new Error("Failed to sell stock.");
@@ -208,6 +206,7 @@ export async function sellStock(
   revalidatePath("/transaction");
 }
 
+// Fetch User's transaction history
 export async function fetchTransactions() {
   const user = await getUser();
   const userId = user.id;
@@ -218,6 +217,7 @@ export async function fetchTransactions() {
   return transactions.rows;
 }
 
+// Fetch User's assets
 export async function fetchAssets() {
   const user = await getUser();
   const userId = user.id;
@@ -242,6 +242,7 @@ export async function fetchUserCash() {
   return userCash.rows[0].cash_balance;
 }
 
+// Fetch data for a specific stock
 export async function fetchStockInfo(symbol) {
   const user = await getUser();
   const userId = user.id;
@@ -255,5 +256,93 @@ export async function fetchStockInfo(symbol) {
   } catch (error) {
     console.error("Failed to fetch stock:", error);
     throw new Error("Failed to fetch stock.");
+  }
+}
+
+// Fetch best matching stocks based on User's input
+export async function fetchBestMatches(searchText) {
+  const api_key = process.env.ALPHA_API_KEY;
+  const alpha_api = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${searchText}&apikey=${api_key}`;
+  try {
+    const res = await axios.get(alpha_api);
+    const bestMatches = await res.data["bestMatches"];
+    return bestMatches;
+  } catch (error) {
+    console.error("Failed to fetch best matches:", error);
+    throw new Error("Failed to fetch best matches.");
+  }
+}
+
+// Fetch major market index (S&P500,Nasdaq, Dow ) price
+export async function fetchMajorMarket() {
+  const user = await getUser();
+  const userId = user.id;
+  const symbols = ["^GSPC", "^IXIC", "^DJI"];
+
+  try {
+    const queryOptions = {
+      modules: ["price", "summaryDetail"],
+    };
+    const marketData = await Promise.all(
+      symbols.map((symbol) => yahooFinance.quoteSummary(symbol, queryOptions))
+    );
+    const formattedData = marketData.map((data, index) => {
+      return {
+        symbol: symbols[index],
+        name: data.price.longName,
+        currentPrice: data.price.regularMarketPrice,
+        previousClose: data.summaryDetail.previousClose,
+        change:
+          data.price.regularMarketPrice - data.summaryDetail.previousClose,
+        changePercent:
+          ((data.price.regularMarketPrice - data.summaryDetail.previousClose) /
+            data.summaryDetail.previousClose) *
+          100,
+      };
+    });
+
+    return formattedData;
+  } catch (error) {
+    console.error("Failed to market data:", error);
+    throw new Error("Failed to fetch market data.");
+  }
+}
+
+// Fetch stock graph data
+export async function fetchStockGraphData(symbol, period) {
+  let interval = "1d"; // Default interval
+  let period1 = new Date();
+
+  // Adjust interval and range based on the selected period
+  switch (period) {
+    case "1d":
+      period1 = new Date(Date.now() - 24 * 60 * 60 * 1000); // 1 day ago
+      interval = "1m"; // 1-minute interval for 1-day view
+      break;
+    case "1m":
+      period1 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 1 month ago
+      interval = "1d"; // 1-day interval for 1-month view
+      break;
+    case "1y":
+      period1 = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
+      interval = "1wk"; // 1-week interval for 1-year view
+      break;
+    case "2y":
+    default:
+      period1 = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000); // 2 years ago
+      interval = "1mo"; // 1-month interval for 2-years view
+      break;
+  }
+
+  try {
+    const result = await yahooFinance.chart(symbol, {
+      period1: period1.toISOString(),
+      interval,
+      return: "object",
+    });
+    return result;
+  } catch (error) {
+    console.error(`Error fetching chart data for ${symbol}:`, error);
+    return null;
   }
 }
