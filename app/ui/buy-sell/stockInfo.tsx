@@ -1,25 +1,41 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { StockInfo } from "@/app/lib/definitions";
 import StockTransactionModal from "@/app/ui/buy-sell/buySellModal";
 import StockChart from "@/app/ui/buy-sell/stockChart";
-import { buyStock, sellStock, fetchStockInfo } from "@/app/lib/actions";
+import {
+  buyStock,
+  sellStock,
+  fetchStockPriceAndChange,
+  fetchBasicFinancials,
+} from "@/app/lib/actions";
 
 export default function StockInfo({ symbol }: { symbol: string }) {
-  const [stockInfo, setStockInfo] = useState<StockInfo | null>(null);
+  const [stockInfo, setStockInfo] = useState(null);
   const [currentPrice, setCurrentPrice] = useState(0);
   const [previousClose, setPreviousClose] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [transactionType, setTransactionType] = useState<"buy" | "sell">("buy");
 
   useEffect(() => {
     const fetchStock = async () => {
+      setIsFetching(true);
+
       try {
-        const result = await fetchStockInfo(symbol);
+        const priceInfo = await fetchStockPriceAndChange(symbol.toUpperCase());
+        const basicFinancialInfo = await fetchBasicFinancials(
+          symbol.toUpperCase()
+        );
+        const result = {
+          ...priceInfo,
+          ...basicFinancialInfo,
+        };
         setStockInfo(result);
       } catch (error) {
         console.log("Error getting stock price", error);
+      } finally {
+        setIsFetching(false);
       }
     };
     fetchStock();
@@ -27,8 +43,8 @@ export default function StockInfo({ symbol }: { symbol: string }) {
 
   useEffect(() => {
     if (stockInfo) {
-      setCurrentPrice(stockInfo.price.regularMarketPrice);
-      setPreviousClose(stockInfo.summaryDetail.previousClose);
+      setCurrentPrice(stockInfo.c);
+      setPreviousClose(stockInfo.pc);
     }
   });
 
@@ -58,7 +74,6 @@ export default function StockInfo({ symbol }: { symbol: string }) {
       await sellStock(symbol, quantity, price, password, transactionType);
     }
     console.log(`Submitted transaction for ${symbol} as ${transactionType}`);
-    // setIsModalOpen(false);
   };
 
   const priceChange = currentPrice - previousClose;
@@ -70,9 +85,10 @@ export default function StockInfo({ symbol }: { symbol: string }) {
         {symbol.toUpperCase()}
       </h2>
 
-      {stockInfo ? (
+      {isFetching ? (
+        <p className="p-2 text-gray-500">Loading...</p>
+      ) : stockInfo && stockInfo.o !== 0 ? (
         <>
-          {/* Display Current Price and Change */}
           <div className="flex items-center mb-4">
             <div className="text-2xl font-bold">${currentPrice.toFixed(2)}</div>
             <div
@@ -85,7 +101,6 @@ export default function StockInfo({ symbol }: { symbol: string }) {
             </div>
           </div>
 
-          {/* Buttons for Buy/Sell */}
           <div className="mt-4 flex justify-start space-x-4">
             <button
               onClick={handleBuyClick}
@@ -101,67 +116,57 @@ export default function StockInfo({ symbol }: { symbol: string }) {
             </button>
           </div>
 
-          {/* Stock Data Table */}
           <table className="min-w-full border-collapse bg-white shadow-lg rounded-lg mt-4">
             <tbody>
               <tr>
                 <td className="border px-4 py-2 bg-blue-100">Previous Close</td>
-                <td className="border px-4 py-2">
-                  ${stockInfo.summaryDetail.previousClose}
-                </td>
+                <td className="border px-4 py-2">${stockInfo.pc}</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2 bg-blue-100">Open</td>
-                <td className="border px-4 py-2">
-                  ${stockInfo.summaryDetail.open}
-                </td>
+                <td className="border px-4 py-2">${stockInfo.o}</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2 bg-blue-100">Day's Low</td>
-                <td className="border px-4 py-2">
-                  ${stockInfo.summaryDetail.dayLow}
-                </td>
+                <td className="border px-4 py-2">${stockInfo.l}</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2 bg-blue-100">Day's High</td>
-                <td className="border px-4 py-2">
-                  ${stockInfo.summaryDetail.dayHigh}
-                </td>
+                <td className="border px-4 py-2">${stockInfo.h}</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2 bg-blue-100">52 Week Low</td>
-                <td className="border px-4 py-2">
-                  ${stockInfo.summaryDetail.fiftyTwoWeekLow}
-                </td>
+                <td className="border px-4 py-2">${stockInfo["52WeekLow"]}</td>
               </tr>
               <tr>
                 <td className="border px-4 py-2 bg-blue-100">52 Week High</td>
+                <td className="border px-4 py-2">${stockInfo["52WeekHigh"]}</td>
+              </tr>
+              <tr>
+                <td className="border px-4 py-2 bg-blue-100">
+                  10 Days Avg. Volume
+                </td>
                 <td className="border px-4 py-2">
-                  ${stockInfo.summaryDetail.fiftyTwoWeekHigh}
+                  {stockInfo["10DayAverageTradingVolume"].toFixed(2)}M
                 </td>
               </tr>
               <tr>
-                <td className="border px-4 py-2 bg-blue-100">Volume</td>
-                <td className="border px-4 py-2">
-                  {(stockInfo.summaryDetail.volume / 1000000).toFixed(2)}M
+                <td className="border px-4 py-2 bg-blue-100">
+                  3 Months Avg. Volume
                 </td>
-              </tr>
-              <tr>
-                <td className="border px-4 py-2 bg-blue-100">Market Cap</td>
                 <td className="border px-4 py-2">
-                  ${(stockInfo.summaryDetail.marketCap / 100000000).toFixed(2)}B
+                  ${stockInfo["3MonthAverageTradingVolume"].toFixed(2)}M
                 </td>
               </tr>
             </tbody>
           </table>
+          <div>
+            <StockChart symbol={symbol} />
+          </div>
         </>
       ) : (
-        <div>Loading...</div>
+        <div>Stock symbol is invalid</div>
       )}
-
-      <div>
-        <StockChart symbol={symbol} />
-      </div>
 
       <StockTransactionModal
         isOpen={isModalOpen}

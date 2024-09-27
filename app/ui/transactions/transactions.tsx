@@ -13,7 +13,7 @@ export default async function Transaction() {
       <h1 className="text-3xl font-semibold text-sky-500">Transactions</h1>
 
       {/* Transactions Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-auto max-h-96">
         <table className="min-w-full bg-white shadow-md rounded-lg">
           <thead>
             <tr className="text-left text-gray-600 font-semibold">

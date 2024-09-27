@@ -1,4 +1,9 @@
-import { fetchAssets, fetchStockInfo, fetchUserCash } from "@/app/lib/actions";
+import {
+  fetchAssets,
+  fetchStockPriceAndChange,
+  fetchUserCash,
+} from "@/app/lib/actions";
+import { Suspense } from "react";
 
 export default async function Assets() {
   const assets = await fetchAssets();
@@ -8,7 +13,9 @@ export default async function Assets() {
   return (
     <div className="p-6 mt-6 md:mt-0 bg-white rounded-lg shadow-lg">
       {/* Assets Title */}
-      <h1 className="text-2xl font-semibold text-gray-700 mb-4">Assets</h1>
+      <h1 className="text-2xl text-sky-500 font-semibold text-gray-700 mb-4">
+        Assets
+      </h1>
 
       {/* Cash Balance Section */}
       <div className="bg-sky-100 p-4 rounded-md mb-6">
@@ -26,40 +33,44 @@ export default async function Assets() {
               <tr className="bg-sky-300 text-white">
                 <th className="p-4 text-left">Stock Symbol</th>
                 <th className="p-4 text-left">Quantity</th>
-                <th className="p-4 text-left">Average Price</th>
+                <th className="p-4 text-left">Avg. Purchase Price</th>
                 <th className="p-4 text-left">Current Price</th>
                 <th className="p-4 text-left">Gain/Loss</th>
               </tr>
             </thead>
-            <tbody>
-              {await Promise.all(
-                assets.map(async (asset, index) => {
-                  const stockInfo = await fetchStockInfo(asset.stock_symbol);
-                  const current_price = stockInfo.price.regularMarketPrice;
-                  const growth =
-                    (current_price - asset.average_price) * asset.quantity;
-                  return (
-                    <tr key={index} className="border-b border-gray-200">
-                      <td className="p-4 text-gray-700">
-                        {asset.stock_symbol}
-                      </td>
-                      <td className="p-4 text-gray-700">{asset.quantity}</td>
-                      <td className="p-4 text-gray-700">
-                        ${parseFloat(asset.average_price).toFixed(2)}
-                      </td>
-                      <td className="p-4 text-gray-700">${current_price}</td>
-                      <td
-                        className={`p-4 font-medium ${
-                          growth >= 0 ? "text-green-500" : "text-red-500"
-                        }`}
-                      >
-                        ${growth.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
+            <Suspense fallback={<p>Loading...</p>}>
+              <tbody>
+                {await Promise.all(
+                  assets.map(async (asset, index) => {
+                    const stockInfo = await fetchStockPriceAndChange(
+                      asset.stock_symbol
+                    );
+                    const current_price = stockInfo.c;
+                    const growth =
+                      (current_price - asset.average_price) * asset.quantity;
+                    return (
+                      <tr key={index} className="border-b border-gray-200">
+                        <td className="p-4 text-gray-700">
+                          {asset.stock_symbol}
+                        </td>
+                        <td className="p-4 text-gray-700">{asset.quantity}</td>
+                        <td className="p-4 text-gray-700">
+                          ${parseFloat(asset.average_price).toFixed(2)}
+                        </td>
+                        <td className="p-4 text-gray-700">${current_price}</td>
+                        <td
+                          className={`p-4 font-medium ${
+                            growth >= 0 ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          ${growth.toFixed(2)}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </Suspense>
           </table>
         </div>
       ) : (

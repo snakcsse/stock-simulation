@@ -31,7 +31,7 @@ export default function StockTransactionModal({
     e.preventDefault();
     if (quantityCheck) return;
 
-    const price = stockInfo.price.regularMarketPrice;
+    const price = stockInfo.c;
 
     try {
       await onSubmit(quantity, price, password, transactionType);

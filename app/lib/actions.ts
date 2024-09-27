@@ -11,6 +11,12 @@ import { redirect } from "next/navigation";
 import yahooFinance from "yahoo-finance2";
 import bcrypt from "bcrypt";
 
+// Setting up finnhub api
+const finnhub = require("finnhub");
+const finnhub_api_key = finnhub.ApiClient.instance.authentications["api_key"];
+finnhub_api_key.apiKey = process.env.FINNHUB_API_KEY;
+const finnhubClient = new finnhub.DefaultApi();
+
 // Login
 export async function authenticate(
   prevState: string | undefined,
@@ -243,29 +249,31 @@ export async function fetchUserCash() {
 }
 
 // Fetch data for a specific stock
-export async function fetchStockInfo(symbol) {
-  const user = await getUser();
-  const userId = user.id;
+// export async function fetchStockInfo(symbol) {
+//   // const user = await getUser();
+//   // const userId = user.id;
 
-  try {
-    const queryOptions = {
-      modules: ["price", "summaryDetail"],
-    };
-    const data = await yahooFinance.quoteSummary(symbol, queryOptions);
-    return data;
-  } catch (error) {
-    console.error("Failed to fetch stock:", error);
-    throw new Error("Failed to fetch stock.");
-  }
-}
+//   try {
+//     const queryOptions = {
+//       modules: ["price", "summaryDetail"],
+//     };
+//     console.log("test");
+//     const data = await yahooFinance.quoteSummary(symbol, queryOptions);
+//     return data;
+//   } catch (error) {
+//     console.error("Failed to fetch stock:", error);
+//     throw new Error("Failed to fetch stock.");
+//   }
+// }
 
-// Fetch best matching stocks based on User's input
+// Fetch best matching stocks based on User's input using Alpha Vantage API
 export async function fetchBestMatches(searchText) {
   const api_key = process.env.ALPHA_API_KEY;
   const alpha_api = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${searchText}&apikey=${api_key}`;
   try {
     const res = await axios.get(alpha_api);
-    const bestMatches = await res.data["bestMatches"];
+    let bestMatches = await res.data["bestMatches"];
+    bestMatches = bestMatches.filter((match) => match["8. currency"] === "USD");
     return bestMatches;
   } catch (error) {
     console.error("Failed to fetch best matches:", error);
@@ -344,5 +352,50 @@ export async function fetchStockGraphData(symbol, period) {
   } catch (error) {
     console.error(`Error fetching chart data for ${symbol}:`, error);
     return null;
+  }
+}
+
+// Fetch stock current price and price change using Finnhub API
+export async function fetchStockPriceAndChange(symbol) {
+  try {
+    const result = await new Promise((resolve, reject) => {
+      finnhubClient.quote(symbol, (error, data, response) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+    const plainResult = { ...result };
+    return plainResult;
+  } catch (error) {
+    console.error("Failed to fetch stock price and change:", error);
+    throw new Error("Failed to fetch stock price and change.");
+  }
+}
+
+// Fetch stock's financials for 52weeks prices, volume
+export async function fetchBasicFinancials(symbol) {
+  try {
+    const result = await new Promise((resolve, reject) => {
+      finnhubClient.companyBasicFinancials(
+        symbol,
+        "margin",
+        (error, data, response) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(data);
+          }
+        }
+      );
+    });
+    let plainResult = { ...result };
+    plainResult = plainResult.metric;
+    return plainResult;
+  } catch (error) {
+    console.error("Failed to fetch basic financials:", error);
+    throw new Error("Failed to fetch basic financials.");
   }
 }

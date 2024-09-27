@@ -27,7 +27,13 @@ export default function StockChart({ symbol }) {
   useEffect(() => {
     const fetchStockData = async () => {
       if (!symbol) return; // Prevent fetching if symbol isn't ready
-      const data = await fetchStockGraphData(symbol, period);
+
+      let data;
+      try {
+        data = await fetchStockGraphData(symbol, period);
+      } catch (err) {
+        return <p>Stock chart is currently unavailable</p>;
+      }
 
       if (data && data.timestamp.length > 0 && data.indicators.quote[0]) {
         const timestamps = data.timestamp;
@@ -106,7 +112,6 @@ export default function StockChart({ symbol }) {
               },
               title: {
                 display: true,
-                text: "Date",
                 color: "#333",
               },
               ticks: {
@@ -120,7 +125,7 @@ export default function StockChart({ symbol }) {
               },
               title: {
                 display: true,
-                text: "Price",
+                text: "Price ($)",
                 color: "#333",
               },
             },

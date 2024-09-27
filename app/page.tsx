@@ -4,35 +4,35 @@ import { StarIcon } from "@heroicons/react/24/solid";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+    <div className="flex flex-col justify-center h-screen bg-gray-50">
       {/* Top Left Title Section */}
-      <div className="absolute top-4 left-4 flex items-center space-x-2">
-        <div className="w-10 h-10 bg-sky-300 flex items-center justify-center rounded">
+      <div className="absolute top-8 left-20 flex items-center space-x-2">
+        <div className="w-10 h-10 bg-sky-500 flex items-center justify-center rounded">
           <StarIcon className="h-6 w-6 text-white" />
         </div>
-        <span className="text-sky-300 font-semibold text-3xl">GrowStocks</span>
+        <span className="text-sky-500 font-semibold text-3xl">GrowStocks</span>
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col lg:flex-row-reverse items-center justify-between w-full px-8 lg:px-32">
-        {/* Middle Left Section (Now moved to the right) */}
-        <div className="lg:w-1/2 space-y-6 text-left">
-          <h1 className="text-3xl lg:text-4xl font-bold">
-            Stock <span className="text-sky-300">Simulation</span> App
+      <div className="flex flex-col lg:flex-row items-start w-full px-20 justify-center">
+        {/* Middle Left Section */}
+        <div className="lg:w-1/2 space-y-6 text-left lg:pt-32">
+          <h1 className="text-4xl lg:text-4xl font-bold">
+            Stock <span className="text-sky-500">Simulation</span> App
           </h1>
           <p className="text-gray-500 text-lg">
-            Practice stock buying and selling if you are not comfortable with it
+            Practice buying and selling to get comfortable with it.
           </p>
 
           {/* Buttons */}
-          <div className="space-x-4">
+          <div className="space-x-4 pt-4">
             <Link href="/signup">
-              <button className="bg-sky-300 text-white px-6 py-2 rounded-md hover:bg-sky-400 transition">
+              <button className="bg-sky-500 text-white px-6 py-2 rounded-md hover:bg-sky-400 transition">
                 Signup
               </button>
             </Link>
             <Link href="/login">
-              <button className="bg-sky-300 text-white px-6 py-2 rounded-md hover:bg-sky-400 transition">
+              <button className="bg-sky-500 text-white px-6 py-2 rounded-md hover:bg-sky-400 transition">
                 Login
               </button>
             </Link>

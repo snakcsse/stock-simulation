@@ -30,11 +30,6 @@ type StockPrice = {
   [key: string]: any;
 };
 
-export type StockInfo = {
-  summaryDetail: SummaryDetail;
-  price: StockPrice;
-};
-
 export type StockTransactionModalProps = {
   isOpen: boolean;
   onClose: () => void;
