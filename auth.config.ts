@@ -22,10 +22,6 @@ export const authConfig = {
       }
       return true; // Allow access to public or non-protected pages
     },
-    // async session({ session, user }) {
-    //   session.user = user; // Example: adding user ID to session
-    //   return session;
-    // },
   },
   providers: [],
 } satisfies NextAuthConfig;

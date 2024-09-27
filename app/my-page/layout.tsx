@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SideNav from "@/app/ui/my-page/sidenav";
 
 export const experimental_ppr = true;

@@ -7,7 +7,6 @@ import { AuthError } from "next-auth";
 import { z } from "zod";
 import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import yahooFinance from "yahoo-finance2";
 import bcrypt from "bcrypt";
 
@@ -48,6 +47,8 @@ export async function signUp(
   prevState: string | undefined,
   formData: FormData
 ) {
+  const loginFormData = new FormData();
+
   try {
     const parsedData = SignUpSchema.safeParse(Object.fromEntries(formData));
 
@@ -75,13 +76,18 @@ export async function signUp(
 
   `;
     // Insert cash for the user
-
     const newUser = result.rows[0];
-    await sql`INSERT INTO user_cash (user_id, cash_balance) VALUES (${newUser.id}, 100000.00)`;
-    redirect("/login");
+    await sql`INSERT INTO user_cash (user_id, cash_balance) VALUES (${newUser.id}, 10000.00)`;
+
+    // Log user in
+    loginFormData.append("email", email);
+    loginFormData.append("password", password);
   } catch (error) {
-    throw error;
+    return error instanceof Error
+      ? error.message
+      : "An unexpected error occurred.";
   }
+  await authenticate(undefined, loginFormData);
 }
 
 // Buy sell actions
@@ -92,14 +98,12 @@ export async function getUser() {
 }
 
 export async function buyStock(
-  // userId: string,
   stockSymbol: string,
   quantity: number,
   price: number,
   password: string,
   transactionType: "buy" | "sell"
 ) {
-  // const user = await sql`SELECT * FROM users WHERE id = ${userId}`;
   const user = await getUser();
   const userId = user.id;
 
@@ -248,24 +252,6 @@ export async function fetchUserCash() {
   return userCash.rows[0].cash_balance;
 }
 
-// Fetch data for a specific stock
-// export async function fetchStockInfo(symbol) {
-//   // const user = await getUser();
-//   // const userId = user.id;
-
-//   try {
-//     const queryOptions = {
-//       modules: ["price", "summaryDetail"],
-//     };
-//     console.log("test");
-//     const data = await yahooFinance.quoteSummary(symbol, queryOptions);
-//     return data;
-//   } catch (error) {
-//     console.error("Failed to fetch stock:", error);
-//     throw new Error("Failed to fetch stock.");
-//   }
-// }
-
 // Fetch best matching stocks based on User's input using Alpha Vantage API
 export async function fetchBestMatches(searchText) {
   const api_key = process.env.ALPHA_API_KEY;
@@ -278,80 +264,6 @@ export async function fetchBestMatches(searchText) {
   } catch (error) {
     console.error("Failed to fetch best matches:", error);
     throw new Error("Failed to fetch best matches.");
-  }
-}
-
-// Fetch major market index (S&P500,Nasdaq, Dow ) price
-export async function fetchMajorMarket() {
-  const user = await getUser();
-  const userId = user.id;
-  const symbols = ["^GSPC", "^IXIC", "^DJI"];
-
-  try {
-    const queryOptions = {
-      modules: ["price", "summaryDetail"],
-    };
-    const marketData = await Promise.all(
-      symbols.map((symbol) => yahooFinance.quoteSummary(symbol, queryOptions))
-    );
-    const formattedData = marketData.map((data, index) => {
-      return {
-        symbol: symbols[index],
-        name: data.price.longName,
-        currentPrice: data.price.regularMarketPrice,
-        previousClose: data.summaryDetail.previousClose,
-        change:
-          data.price.regularMarketPrice - data.summaryDetail.previousClose,
-        changePercent:
-          ((data.price.regularMarketPrice - data.summaryDetail.previousClose) /
-            data.summaryDetail.previousClose) *
-          100,
-      };
-    });
-
-    return formattedData;
-  } catch (error) {
-    console.error("Failed to market data:", error);
-    throw new Error("Failed to fetch market data.");
-  }
-}
-
-// Fetch stock graph data
-export async function fetchStockGraphData(symbol, period) {
-  let interval = "1d"; // Default interval
-  let period1 = new Date();
-
-  // Adjust interval and range based on the selected period
-  switch (period) {
-    case "1d":
-      period1 = new Date(Date.now() - 24 * 60 * 60 * 1000); // 1 day ago
-      interval = "1m"; // 1-minute interval for 1-day view
-      break;
-    case "1m":
-      period1 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 1 month ago
-      interval = "1d"; // 1-day interval for 1-month view
-      break;
-    case "1y":
-      period1 = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
-      interval = "1wk"; // 1-week interval for 1-year view
-      break;
-    case "2y":
-    default:
-      period1 = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000); // 2 years ago
-      interval = "1mo"; // 1-month interval for 2-years view
-      break;
-  }
-
-  try {
-    const result = await yahooFinance.chart(symbol, {
-      period1: period1.toISOString(),
-      interval,
-      return: "object",
-    });
-    return result;
-  } catch (error) {
-    console.error(`Error fetching chart data for ${symbol}:`, error);
-    return null;
   }
 }
 
@@ -397,5 +309,44 @@ export async function fetchBasicFinancials(symbol) {
   } catch (error) {
     console.error("Failed to fetch basic financials:", error);
     throw new Error("Failed to fetch basic financials.");
+  }
+}
+
+// Fetch stock graph data
+export async function fetchStockGraphData(symbol, period) {
+  let interval = "1d"; // Default interval
+  let period1 = new Date();
+
+  // Adjust interval and range based on the selected period
+  switch (period) {
+    case "1d":
+      period1 = new Date(Date.now() - 24 * 60 * 60 * 1000); // 1 day ago
+      interval = "1m"; // 1-minute interval for 1-day view
+      break;
+    case "1m":
+      period1 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 1 month ago
+      interval = "1d"; // 1-day interval for 1-month view
+      break;
+    case "1y":
+      period1 = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000); // 1 year ago
+      interval = "1wk"; // 1-week interval for 1-year view
+      break;
+    case "2y":
+    default:
+      period1 = new Date(Date.now() - 730 * 24 * 60 * 60 * 1000); // 2 years ago
+      interval = "1mo"; // 1-month interval for 2-years view
+      break;
+  }
+
+  try {
+    const result = await yahooFinance.chart(symbol, {
+      period1: period1.toISOString(),
+      interval,
+      return: "object",
+    });
+    return result;
+  } catch (error) {
+    console.error(`Error fetching chart data for ${symbol}:`, error);
+    return null;
   }
 }

@@ -9,6 +9,7 @@ import {
   fetchStockPriceAndChange,
   fetchBasicFinancials,
 } from "@/app/lib/actions";
+import Footer from "@/app/ui/footer";
 
 export default function StockInfo({ symbol }: { symbol: string }) {
   const [stockInfo, setStockInfo] = useState(null);
@@ -163,6 +164,18 @@ export default function StockInfo({ symbol }: { symbol: string }) {
           <div>
             <StockChart symbol={symbol} />
           </div>
+          <Footer
+            sources={[
+              {
+                name: "Finnhub",
+                link: "https://finnhub.io/docs/api/introduction",
+              },
+              {
+                name: "yahoo-finance2",
+                link: "https://www.npmjs.com/package/yahoo-finance2",
+              },
+            ]}
+          ></Footer>
         </>
       ) : (
         <div>Stock symbol is invalid</div>

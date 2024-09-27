@@ -10,8 +10,10 @@ export default async function Page({
   const symbol = params.symbol;
 
   return (
-    <div>
-      <StockInfo symbol={symbol} />
-    </div>
+    <>
+      <div>
+        <StockInfo symbol={symbol} />
+      </div>
+    </>
   );
 }
