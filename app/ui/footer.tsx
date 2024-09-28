@@ -1,4 +1,6 @@
-export default function Footer({ sources }) {
+import { FooterSources } from "@/app/lib/definitions";
+
+export default function Footer({ sources }: { sources: FooterSources }) {
   return (
     <footer className="mt-20 text-gray-500 text-xs">
       Data provided by{" "}

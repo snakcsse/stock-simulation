@@ -10,9 +10,10 @@ import {
   fetchBasicFinancials,
 } from "@/app/lib/actions";
 import Footer from "@/app/ui/footer";
+import { FinnhubStockInfo } from "@/app/lib/definitions";
 
 export default function StockInfo({ symbol }: { symbol: string }) {
-  const [stockInfo, setStockInfo] = useState(null);
+  const [stockInfo, setStockInfo] = useState<FinnhubStockInfo | null>(null);
   const [currentPrice, setCurrentPrice] = useState(0);
   const [previousClose, setPreviousClose] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +29,7 @@ export default function StockInfo({ symbol }: { symbol: string }) {
         const basicFinancialInfo = await fetchBasicFinancials(
           symbol.toUpperCase()
         );
-        const result = {
+        const result: FinnhubStockInfo = {
           ...priceInfo,
           ...basicFinancialInfo,
         };
@@ -47,7 +48,7 @@ export default function StockInfo({ symbol }: { symbol: string }) {
       setCurrentPrice(stockInfo.c);
       setPreviousClose(stockInfo.pc);
     }
-  });
+  }, [stockInfo]);
 
   const handleBuyClick = () => {
     setTransactionType("buy");
@@ -65,9 +66,9 @@ export default function StockInfo({ symbol }: { symbol: string }) {
 
   const handleSubmitTransaction = async (
     quantity: number,
-    price: number,
     password: string,
-    transactionType: "buy" | "sell"
+    transactionType: "buy" | "sell",
+    price: number
   ) => {
     if (transactionType === "buy") {
       await buyStock(symbol, quantity, price, password, transactionType);
@@ -148,7 +149,10 @@ export default function StockInfo({ symbol }: { symbol: string }) {
                   10 Days Avg. Volume
                 </td>
                 <td className="border px-4 py-2">
-                  {stockInfo["10DayAverageTradingVolume"].toFixed(2)}M
+                  {stockInfo["10DayAverageTradingVolume"]
+                    ? stockInfo["10DayAverageTradingVolume"].toFixed(2)
+                    : "-"}
+                  M
                 </td>
               </tr>
               <tr>
@@ -156,7 +160,11 @@ export default function StockInfo({ symbol }: { symbol: string }) {
                   3 Months Avg. Volume
                 </td>
                 <td className="border px-4 py-2">
-                  ${stockInfo["3MonthAverageTradingVolume"].toFixed(2)}M
+                  $
+                  {stockInfo["3MonthAverageTradingVolume"]
+                    ? stockInfo["3MonthAverageTradingVolume"].toFixed(2)
+                    : "-"}
+                  M
                 </td>
               </tr>
             </tbody>

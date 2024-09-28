@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { fetchStockGraphData } from "@/app/lib/actions";
+import { ChartData } from "@/app/lib/definitions";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -20,9 +21,9 @@ ChartJS.register(
   Legend
 );
 
-export default function StockChart({ symbol }) {
-  const [chartData, setChartData] = useState(null);
-  const [period, setPeriod] = useState("2y"); // Default period: 2 years
+export default function StockChart({ symbol }: { symbol: string }) {
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [period, setPeriod] = useState<"1d" | "1m" | "1y" | "2y">("2y"); // Default period: 2 years
 
   useEffect(() => {
     const fetchStockData = async () => {
@@ -35,7 +36,12 @@ export default function StockChart({ symbol }) {
         return <p>Stock chart is currently unavailable</p>;
       }
 
-      if (data && data.timestamp.length > 0 && data.indicators.quote[0]) {
+      if (
+        data &&
+        data.timestamp &&
+        data.timestamp.length > 0 &&
+        data.indicators.quote[0]
+      ) {
         const timestamps = data.timestamp;
         const closePrices = data.indicators.quote[0].close;
 
@@ -65,7 +71,7 @@ export default function StockChart({ symbol }) {
     fetchStockData();
   }, [symbol, period]);
 
-  const handlePeriodChange = (newPeriod) => {
+  const handlePeriodChange = (newPeriod: "1d" | "1m" | "1y" | "2y") => {
     setPeriod(newPeriod);
   };
 
@@ -93,7 +99,7 @@ export default function StockChart({ symbol }) {
         {["1d", "1m", "1y", "2y"].map((p) => (
           <button
             key={p}
-            onClick={() => handlePeriodChange(p)}
+            onClick={() => handlePeriodChange(p as "1d" | "1m" | "1y" | "2y")}
             className="bg-sky-500 text-white p-2 rounded hover:bg-sky-600 transition"
           >
             {p}

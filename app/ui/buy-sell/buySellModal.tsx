@@ -1,8 +1,7 @@
 "use-client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { StockTransactionModalProps } from "@/app/lib/definitions";
-import { useDebouncedCallback } from "use-debounce";
 
 export default function StockTransactionModal({
   isOpen,
@@ -15,7 +14,7 @@ export default function StockTransactionModal({
   const [password, setPassword] = useState("");
   const [quantityCheck, setQuantityCheck] = useState("");
 
-  const handleQuantityChange = (e) => {
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(e.target.value);
     if (value % 100 === 0 && value >= 100) {
       setQuantity(value);
@@ -31,10 +30,10 @@ export default function StockTransactionModal({
     e.preventDefault();
     if (quantityCheck) return;
 
-    const price = stockInfo.c;
+    const price = stockInfo ? stockInfo.c : 0;
 
     try {
-      await onSubmit(quantity, price, password, transactionType);
+      await onSubmit(quantity, password, transactionType, price);
 
       alert(
         `Successfully ${
@@ -43,7 +42,11 @@ export default function StockTransactionModal({
       );
       setPassword("");
     } catch (err) {
-      alert(err.message);
+      if (err instanceof Error) {
+        alert(err.message);
+      } else {
+        alert("An unknown error occurred");
+      }
       setPassword("");
     }
   };
@@ -81,7 +84,7 @@ export default function StockTransactionModal({
           </div>
           <div className="mb-4">
             <label className="block mb-1 text-sm sm:text-base">
-              Transaction Password
+              Account Password
             </label>
             <input
               type="password"

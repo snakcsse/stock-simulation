@@ -9,6 +9,11 @@ import { sql } from "@vercel/postgres";
 import { revalidatePath } from "next/cache";
 import yahooFinance from "yahoo-finance2";
 import bcrypt from "bcrypt";
+import {
+  FinnhubQuote,
+  FinnhubFinancialBasics,
+  BestMatches,
+} from "@/app/lib/definitions";
 
 // Setting up finnhub api
 const finnhub = require("finnhub");
@@ -93,6 +98,10 @@ export async function signUp(
 // Buy sell actions
 export async function getUser() {
   const session = await auth();
+  // Check if session and session.user are defined
+  if (!session || !session.user) {
+    throw new Error("User is not authenticated");
+  }
   const user = await sql`SELECT * FROM users WHERE email=${session.user.email}`;
   return user.rows[0];
 }
@@ -253,13 +262,15 @@ export async function fetchUserCash() {
 }
 
 // Fetch best matching stocks based on User's input using Alpha Vantage API
-export async function fetchBestMatches(searchText) {
+export async function fetchBestMatches(searchText: string) {
   const api_key = process.env.ALPHA_API_KEY;
   const alpha_api = `https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=${searchText}&apikey=${api_key}`;
   try {
     const res = await axios.get(alpha_api);
     let bestMatches = await res.data["bestMatches"];
-    bestMatches = bestMatches.filter((match) => match["8. currency"] === "USD");
+    bestMatches = bestMatches.filter(
+      (match: BestMatches) => match["8. currency"] === "USD"
+    );
     return bestMatches;
   } catch (error) {
     console.error("Failed to fetch best matches:", error);
@@ -268,14 +279,16 @@ export async function fetchBestMatches(searchText) {
 }
 
 // Fetch stock current price and price change using Finnhub API
-export async function fetchStockPriceAndChange(symbol) {
+export async function fetchStockPriceAndChange(
+  symbol: string
+): Promise<FinnhubQuote> {
   try {
-    const result = await new Promise((resolve, reject) => {
-      finnhubClient.quote(symbol, (error, data, response) => {
+    const result: FinnhubQuote = await new Promise((resolve, reject) => {
+      finnhubClient.quote(symbol, (error: any, data: FinnhubQuote | null) => {
         if (error) {
           reject(error);
         } else {
-          resolve(data);
+          resolve(data as FinnhubQuote);
         }
       });
     });
@@ -288,24 +301,30 @@ export async function fetchStockPriceAndChange(symbol) {
 }
 
 // Fetch stock's financials for 52weeks prices, volume
-export async function fetchBasicFinancials(symbol) {
+export async function fetchBasicFinancials(symbol: string) {
   try {
-    const result = await new Promise((resolve, reject) => {
-      finnhubClient.companyBasicFinancials(
-        symbol,
-        "margin",
-        (error, data, response) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(data);
+    const result: FinnhubFinancialBasics | null = await new Promise(
+      (resolve, reject) => {
+        finnhubClient.companyBasicFinancials(
+          symbol,
+          "margin",
+          (error: any, data: FinnhubFinancialBasics | null) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(data);
+            }
           }
-        }
-      );
-    });
-    let plainResult = { ...result };
-    plainResult = plainResult.metric;
-    return plainResult;
+        );
+      }
+    );
+    if (result && result.metric) {
+      return { ...result.metric };
+    }
+
+    // let plainResult = Object.assign({}, result);
+    // plainResult = plainResult.metric;
+    // return plainResult;
   } catch (error) {
     console.error("Failed to fetch basic financials:", error);
     throw new Error("Failed to fetch basic financials.");
@@ -313,8 +332,11 @@ export async function fetchBasicFinancials(symbol) {
 }
 
 // Fetch stock graph data
-export async function fetchStockGraphData(symbol, period) {
-  let interval = "1d"; // Default interval
+export async function fetchStockGraphData(
+  symbol: string,
+  period: "1d" | "1m" | "1y" | "2y"
+) {
+  let interval: "1m" | "1d" | "1wk" | "1mo" = "1d"; // Default interval
   let period1 = new Date();
 
   // Adjust interval and range based on the selected period
