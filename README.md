@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stock Simulation **(Ongoing Developmnet)**
 
-## Getting Started
+Stock Simulation is an app built with Next.js that allows users to simulate buying and selling stocks to practise trading.
 
-First, run the development server:
+Several APIs, including Alpha Vantage, Finnhub api and yahoo finance2 are used for fetching stock data to mitigate the impact of rate limits from these APIs.
+Users can search for stocks by typing in symbols, or keywords for the company where the app will then give suggestions on the best matching stocks.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Optimized for desktop and mobile.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Live Demo
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Check out the current version of the app [here](https://stock-simulation-two.vercel.app/)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Installation
 
-## Learn More
+To set up the project locally, please follow these steps:
 
-To learn more about Next.js, take a look at the following resources:
+1. **Clone the repo**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   ```bash
+   git clone https://github.com/snakcsse/stock-simulation.git
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Create environment variables**
 
-## Deploy on Vercel
+   - Create a '.env' file in the root directory with the following variables:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   #### `.env` File
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   ```env
+   AUTH_SECRET=your-auth-secret
+
+   POSTGRES_URL=your-postgres-url
+   POSTGRES_PRISMA_URL=your-postgres-prisma-url
+   POSTGRES_URL_NO_SSL=your-postgres-url-no-ssl
+   POSTGRES_URL_NON_POOLING=your-url-non-pooling
+   POSTGRES_USER=your-postgres-user
+   POSTGRES_HOST=your-postgres-host
+   POSTGRES_PASSWORD=your-postgres-password
+   POSTGRES_DATABASE=your-postgres-database
+
+   ALPHA_API_KEY=your-alpha-vantage-free-api-key
+   FINNHUB_API_KEY=your-finnhub-free-api-key
+   ```
+
+3. **Install dependencies**
+
+   - Run the below code in the rool directory to install the dependencies
+
+   ```
+    pnpm install
+   ```
+
+4. **Run the application**
+
+   ```
+   pnpm run dev
+   ```
+
+   - Visit the following URL in your browser to create tables and seed placeholder-data for the databases. Make sure to have the database configured properly before seeding.
+
+   ```
+   http://localhost:3000/seed
+   ```
+
+## Technology Stack
+
+- Next.js
+- TypeScript
+- PostgreSQL
+
+## Author
+
+Seita Nakagawa
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
