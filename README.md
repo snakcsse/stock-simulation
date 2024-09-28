@@ -7,7 +7,7 @@ Users can easily search for stocks by entering symbols or company keywords, and 
 
 Upcoming features include the addition of stock suggestions for premium users.
 
-The app leverages multiple APIs, including Alpha Vantage, Finnhub, and Yahoo Finance, to fetch stock data. This approach helps mitigate the impact of rate limits imposed by these APIs.
+The app integrates Alpha Vantage and Finnhub APIs to ensure continuous stock data availability.
 
 Optimized for both desktop and mobile devices.
 
