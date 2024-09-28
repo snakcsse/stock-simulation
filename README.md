@@ -1,11 +1,14 @@
 # Stock Simulation **(Ongoing Developmnet)**
 
-Stock Simulation is an app built with Next.js that allows users to simulate buying and selling stocks to practise trading.
+Stock Simulation is a Next.js app that enables users to practice trading by simulating the buying and selling of stocks. Users can track their simulated investments and see how their strategies perform over time.
 
-Several APIs, including Alpha Vantage, Finnhub api and yahoo finance2 are used for fetching stock data to mitigate the impact of rate limits from these APIs.
-Users can search for stocks by typing in symbols, or keywords for the company where the app will then give suggestions on the best matching stocks.
+Users can easily search for stocks by entering symbols or company keywords, and the app provides suggestions for the best matching stocks.
 
-Optimized for desktop and mobile.
+Upcoming features include the addition of stock suggestions for premium users.
+
+The app leverages multiple APIs, including Alpha Vantage, Finnhub, and Yahoo Finance, to fetch stock data. This approach helps mitigate the impact of rate limits imposed by these APIs.
+
+Optimized for both desktop and mobile devices.
 
 ### Live Demo
 
