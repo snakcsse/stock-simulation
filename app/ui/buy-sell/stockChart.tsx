@@ -53,7 +53,7 @@ export default function StockChart({ symbol }: { symbol: string }) {
           labels,
           datasets: [
             {
-              label: `${symbol.toUpperCase()} Price`,
+              label: `${symbol.toUpperCase()}`,
               data: closePrices,
               borderColor: "rgba(75, 192, 192, 1)",
               backgroundColor: "rgba(75, 192, 192, 0.2)",
@@ -94,13 +94,13 @@ export default function StockChart({ symbol }: { symbol: string }) {
 
   return (
     <div className="p-4 bg-white rounded-lg shadow-lg">
-      <div className="mb-4 flex justify-around">
+      <div className="mb-4 flex flex-wrap justify-around gap-2 sm:gap-4">
         {/* Period selection buttons */}
         {["1d", "1m", "1y", "2y"].map((p) => (
           <button
             key={p}
             onClick={() => handlePeriodChange(p as "1d" | "1m" | "1y" | "2y")}
-            className="bg-sky-500 text-white p-2 rounded hover:bg-sky-600 transition"
+            className="bg-sky-500 text-white px-2 py-1 text-xs rounded hover:bg-sky-600 transition sm:text-sm sm:px-3 sm:py-2 md:text-xs"
           >
             {p}
           </button>
@@ -119,10 +119,16 @@ export default function StockChart({ symbol }: { symbol: string }) {
               title: {
                 display: true,
                 color: "#333",
+                font: {
+                  size: 10,
+                },
               },
               ticks: {
                 autoSkip: true, // Automatically skip labels
                 maxTicksLimit: 15, // Limit the maximum number of ticks
+                font: {
+                  size: 10,
+                },
               },
             },
             y: {
@@ -133,16 +139,20 @@ export default function StockChart({ symbol }: { symbol: string }) {
                 display: true,
                 text: "Price ($)",
                 color: "#333",
+                font: {
+                  size: 10,
+                },
+              },
+              ticks: {
+                font: {
+                  size: 10,
+                },
               },
             },
           },
           plugins: {
             legend: {
-              display: true,
-              position: "top",
-              labels: {
-                color: "#333",
-              },
+              display: false,
             },
             tooltip: {
               titleColor: "#333",

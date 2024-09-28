@@ -185,7 +185,10 @@ export default function StockInfo({ symbol }: { symbol: string }) {
           ></Footer>
         </>
       ) : (
-        <div>Stock symbol is invalid</div>
+        <div>
+          Stock symbol is invalid or information for this symbol is not
+          available.
+        </div>
       )}
 
       <StockTransactionModal

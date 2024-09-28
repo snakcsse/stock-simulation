@@ -55,7 +55,6 @@ export type ChartData = {
   labels: string[];
   datasets: [
     {
-      label: string;
       data: (number | null)[];
       [key: string]: any;
     }

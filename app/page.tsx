@@ -25,14 +25,14 @@ export default function Home() {
           </p>
 
           {/* Buttons */}
-          <div className="space-x-4 pt-4">
+          <div className="flex space-x-4">
             <Link href="/signup">
-              <button className="bg-sky-500 text-white px-6 py-2 rounded-md hover:bg-sky-400 transition">
+              <button className="bg-sky-500 text-white w-[100px] px-6 py-2 rounded-md hover:bg-sky-400 transition">
                 Signup
               </button>
             </Link>
             <Link href="/login">
-              <button className="bg-sky-500 text-white px-6 py-2 rounded-md hover:bg-sky-400 transition">
+              <button className="bg-sky-500 text-white w-[100px] px-6 py-2 rounded-md hover:bg-sky-400 transition">
                 Login
               </button>
             </Link>

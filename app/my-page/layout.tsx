@@ -38,7 +38,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             Close
           </button>
-          <SideNav />
+          <SideNav setIsSidebarOpen={setIsSidebarOpen} />
         </div>
       </div>
 
