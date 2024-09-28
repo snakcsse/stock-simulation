@@ -1,4 +1,4 @@
-# Stock Simulation **(Ongoing Developmnet)**
+# Stock Simulation <small>(Ongoing Development)</small>
 
 Stock Simulation is a Next.js app that enables users to practice trading by simulating the buying and selling of stocks. Users can track their simulated investments and see how their strategies perform over time.
 
