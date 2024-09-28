@@ -188,7 +188,7 @@ export async function sellStock(
     `;
     const stockQuantity = parseFloat(userStockQuantity.rows[0]?.quantity);
 
-    if (stockQuantity < quantity) {
+    if (!stockQuantity || stockQuantity < quantity) {
       throw new Error("Insufficient stocks");
     }
 
