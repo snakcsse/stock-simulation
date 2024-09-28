@@ -43,7 +43,7 @@ export default function StockTransactionModal({
       setPassword("");
     } catch (err) {
       if (err instanceof Error) {
-        alert(err.message);
+        alert("Failed. Please check your credentials or assets.");
       } else {
         alert("An unknown error occurred");
       }

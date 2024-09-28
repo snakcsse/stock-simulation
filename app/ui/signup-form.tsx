@@ -85,7 +85,7 @@ export default function SignUpForm() {
               </div>
             </div>
           </div>
-          <Button className="mt-4 w-full mt-6" aira-disabled={isPending}>
+          <Button className="mt-4 w-full mt-6" aria-disabled={isPending}>
             Sign Up <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
           </Button>
           <div

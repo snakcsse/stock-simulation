@@ -43,7 +43,7 @@ export default function Home() {
         <div className="lg:w-1/2 mt-8 lg:mt-0 hidden lg:block">
           {/* Placeholder for stock chart image */}
           <Image
-            src="/stock-chart.jpg" // Add your stock chart image here
+            src="/stock-chart.JPG"
             alt="Stock Chart"
             width={500}
             height={300}

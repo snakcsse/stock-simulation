@@ -160,7 +160,6 @@ export default function StockInfo({ symbol }: { symbol: string }) {
                   3 Months Avg. Volume
                 </td>
                 <td className="border px-4 py-2">
-                  $
                   {stockInfo["3MonthAverageTradingVolume"]
                     ? stockInfo["3MonthAverageTradingVolume"].toFixed(2)
                     : "-"}

@@ -219,7 +219,7 @@ export async function sellStock(
     `;
   } catch (error) {
     console.error("Failed to sell stock:", error);
-    throw new Error("Failed to sell stock.");
+    throw new Error(`Failed to sell stock.`);
   }
   revalidatePath("/asset");
   revalidatePath("/transaction");
