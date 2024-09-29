@@ -21,7 +21,8 @@ export default function Home() {
             Stock <span className="text-sky-500">Simulation</span> App
           </h1>
           <p className="text-gray-500 text-lg">
-            Practice buying and selling to get comfortable with it.
+            Practice buying and selling stocks to become comfortable with
+            trading!
           </p>
 
           {/* Buttons */}
